@@ -16,18 +16,26 @@ class ExampleLayer : public Walnut::Layer
 public:
 	ExampleLayer() :m_Camera(45.0f, 0.1f, 100.0f)
 	{
+		Material& pinkMat = m_Scene.materials.emplace_back();
+		pinkMat.albedo = { 1.0f, 0.0f, 1.0f };
+		pinkMat.roughness = 0.0f;
+
+		Material& blueMat = m_Scene.materials.emplace_back();
+		blueMat.albedo = { 0.2f, 0.3f, 1.0f };
+		blueMat.roughness = 0.1f;
+
 		{
 			Sphere sphere;
 			sphere.center = { 0.0f, 0.0f, 0.0f };
-			sphere.radius = 0.5f;
-			sphere.albedo = { 1.0f, 0.0f, 1.0f };
+			sphere.radius = 1.0f;
+			sphere.materialIndex = 0;
 			m_Scene.spheres.push_back(sphere);
 		}
 		{
 			Sphere sphere;
-			sphere.center = { 1.0f, 0.0f, -0.5f };
-			sphere.radius = 1.5f;
-			sphere.albedo = { 0.2f, 0.3f, 1.0f };
+			sphere.center = { 0.0f, -101.0f, -5.0f };
+			sphere.radius = 100.f;
+			sphere.materialIndex = 1;
 			m_Scene.spheres.push_back(sphere);
 		}
 	}
@@ -53,11 +61,25 @@ public:
 			Sphere& sphere = m_Scene.spheres[i];
 			ImGui::DragFloat3("Center", glm::value_ptr(sphere.center), 0.1f);
 			ImGui::DragFloat("Radius", &sphere.radius, 0.1f);
-			ImGui::ColorEdit3("Albedo", glm::value_ptr(sphere.albedo), 0.1f);
+			ImGui::DragInt("MaterialIndex", &sphere.materialIndex, 1.0f, 0, (int)m_Scene.materials.size() - 1);
 
 			ImGui::Separator();
 			ImGui::PopID();
 		}
+
+		for (size_t i = 0; i < m_Scene.materials.size(); i++)
+		{
+			ImGui::PushID(i);
+
+			Material& material = m_Scene.materials[i];
+			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.albedo), 0.1f);
+			ImGui::DragFloat("Roughness", &material.roughness, 0.05f, 0.0f, 1.0f);
+			ImGui::DragFloat("Metallic", &material.metallic, 0.05f, 0.0f, 1.0f);
+
+			ImGui::Separator();
+			ImGui::PopID();
+		}
+
 		ImGui::End();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));

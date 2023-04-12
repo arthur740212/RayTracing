@@ -122,7 +122,7 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 	int bounces = 5;
 	for (int i = 0; i < bounces; i++)
 	{
-		Renderer::HitPayload payload = TraceRay(ray);
+		HitPayload payload = TraceRay(ray);
 		if (payload.hitDistance < 0.0f)
 		{
 			glm::vec3 skyColor = glm::vec3(0.6f, 0.7f, 0.9f);
@@ -133,8 +133,8 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 		glm::vec3 lightDir = glm::normalize(glm::vec3(-1, -1, -1));
 		float lightIntensity = glm::max(glm::dot(payload.worldNorm, -lightDir), 0.0f); // == cos(angle)
 
-		const Sphere& sphere = m_ActiveScene->spheres[payload.objectIndex];
-		const Material& material = m_ActiveScene->materials[sphere.materialIndex];
+		const Shape* shape = m_ActiveScene->shapes[payload.objectIndex];
+		const Material& material = m_ActiveScene->materials[shape->materialIndex];
 
 		glm::vec3 sphereColor = material.albedo;
 		sphereColor *= lightIntensity;
@@ -150,77 +150,42 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 	return glm::vec4(color, 1.0f);
 }
 
-Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
+HitPayload Renderer::TraceRay(const Ray& ray)
 {
-	// (bx^2 + by^2)t^2 + (2(axbx + ayby))t + (ax^2 + ay^2 - r^2) = 0
-	// where
-	// a = ray origin
-	// b = ray direction
-	// r = radius
-	// t = hit distance
-
-	int closestSphere = -1;
+	int closestShape = -1;
 	float closestDist = std::numeric_limits<float>::max(); //FLT_MAX;
 
-	for (size_t i = 0; i < m_ActiveScene->spheres.size(); i++)
+	for (size_t i = 0; i < m_ActiveScene->shapes.size(); i++)
 	{
-		const Sphere& sphere = m_ActiveScene->spheres[i];
-		glm::vec3 relativeOrigin = ray.origin - sphere.center;
+		const Shape* shape = m_ActiveScene->shapes[i];
 
-		float a = glm::dot(ray.direction, ray.direction);
-		float b = 2.0f * glm::dot(relativeOrigin, ray.direction);
-		float c = glm::dot(relativeOrigin, relativeOrigin) - sphere.radius * sphere.radius;
+		float intersectionT = shape->RayIntersection(ray);
 
-		// Quadratic forumula discriminant:
-		// b^2 - 4ac
-
-		float discriminant = b * b - 4.0f * a * c;
-		if (discriminant < 0.0f)
+		if (intersectionT < closestDist && intersectionT > 0.0f)
 		{
-			continue;
-		}
-
-		// Quadratic formula:
-		// (-b +- sqrt(discriminant)) / 2a
-
-		//float t0 = (-b + glm::sqrt(discriminant)) / (2.0f * a); // Second hit distance (currently unused)
-		float smallestT = (-b - glm::sqrt(discriminant)) / (2.0f * a);
-		if (smallestT < closestDist && smallestT > 0.0f)
-		{
-			closestDist = smallestT;
-			closestSphere = int(i);
+			closestDist = intersectionT;
+			closestShape = int(i);
 		}
 	}
 
-	if (closestSphere < 0)
+	if (closestShape < 0)
 	{
 		return Miss(ray);
 	}
 
-	return ClosestHit(ray, closestDist, closestSphere);
+	return ClosestHit(ray, closestDist, closestShape);
 }
 
 
-Renderer::HitPayload Renderer::Miss(const Ray& ray)
+HitPayload Renderer::Miss(const Ray& ray)
 {
-	Renderer::HitPayload payload;
+	HitPayload payload;
 	payload.hitDistance = -1.0;
 	return payload;
 }
 
-Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int objectIndex)
+HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int objectIndex)
 {
-	Renderer::HitPayload payload;
-	payload.hitDistance = hitDistance;
-	payload.objectIndex = objectIndex;
-
-	const Sphere& closestSphere = m_ActiveScene->spheres[objectIndex];
-
-	glm::vec3 relativeOrigin = ray.origin - closestSphere.center;
-	payload.worldPos = relativeOrigin + ray.direction * hitDistance;
-	payload.worldNorm = glm::normalize(payload.worldPos);
-
-	payload.worldPos += closestSphere.center;
-
-	return payload;
+	const Shape* closestShape = m_ActiveScene->shapes[objectIndex];
+	return closestShape->CreatePayload(ray, hitDistance, objectIndex);
 }

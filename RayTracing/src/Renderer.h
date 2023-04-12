@@ -5,9 +5,9 @@
 #include "Camera.h"
 #include "Ray.h"
 #include "Scene.h"
+#include "HitPayload.h"
 
 #include <memory>
-#include <glm/glm.hpp>
 
 class Renderer
 {
@@ -16,6 +16,7 @@ public:
 	{
 		bool Accumulate = true;
 	};
+
 public:
 	Renderer() = default;
 
@@ -27,15 +28,6 @@ public:
 	void ResetFrameIndex() { m_FrameIndex = 1; }
 	Settings& GetSettings() { return m_Settings; }
 private:
-
-	struct	HitPayload
-	{
-		float hitDistance;
-		glm::vec3 worldPos;
-		glm::vec3 worldNorm;
-
-		int objectIndex;
-	};
 
 	glm::vec4 PerPixel(uint32_t x, uint32_t y);
 

@@ -25,18 +25,18 @@ public:
 		blueMat.roughness = 0.1f;
 
 		{
-			Sphere sphere;
-			sphere.center = { 0.0f, 0.0f, 0.0f };
-			sphere.radius = 1.0f;
-			sphere.materialIndex = 0;
-			m_Scene.spheres.push_back(sphere);
+			Sphere* sphere = new Sphere();
+			sphere->center = { 0.0f, 0.0f, 0.0f };
+			sphere->radius = 1.0f;
+			sphere->materialIndex = 0;
+			m_Scene.shapes.push_back(sphere);
 		}
 		{
-			Sphere sphere;
-			sphere.center = { 0.0f, -101.0f, -5.0f };
-			sphere.radius = 100.f;
-			sphere.materialIndex = 1;
-			m_Scene.spheres.push_back(sphere);
+			Sphere* sphere = new Sphere();
+			sphere->center = { 0.0f, -101.0f, -5.0f };
+			sphere->radius = 100.f;
+			sphere->materialIndex = 1;
+			m_Scene.shapes.push_back(sphere);
 		}
 	}
 	virtual void OnUpdate(float ts) override
@@ -62,14 +62,13 @@ public:
 		ImGui::End();
 
 		ImGui::Begin("Scene");
-		for (size_t i = 0; i < m_Scene.spheres.size(); i++)
+		for (size_t i = 0; i < m_Scene.shapes.size(); i++)
 		{
 			ImGui::PushID(i);
 
-			Sphere& sphere = m_Scene.spheres[i];
-			ImGui::DragFloat3("Center", glm::value_ptr(sphere.center), 0.1f);
-			ImGui::DragFloat("Radius", &sphere.radius, 0.1f);
-			ImGui::DragInt("MaterialIndex", &sphere.materialIndex, 1.0f, 0, (int)m_Scene.materials.size() - 1);
+			Shape* shape = m_Scene.shapes[i];
+			shape->OnGUI();
+			ImGui::DragInt("MaterialIndex", &(shape->materialIndex), 1.0f, 0, (int)m_Scene.materials.size() - 1);
 
 			ImGui::Separator();
 			ImGui::PopID();

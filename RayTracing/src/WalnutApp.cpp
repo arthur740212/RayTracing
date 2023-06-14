@@ -23,6 +23,10 @@ public:
 		Material& blueMat = m_Scene.materials.emplace_back();
 		blueMat.albedo = { 0.2f, 0.3f, 1.0f };
 		blueMat.roughness = 0.1f;
+		
+		Material& greenMat = m_Scene.materials.emplace_back();
+		greenMat.albedo = { 0.2f, 0.9f, 1.0f };
+		greenMat.roughness = 0.5f;
 
 		{
 			Sphere* sphere = new Sphere();
@@ -37,6 +41,11 @@ public:
 			sphere->radius = 100.f;
 			sphere->materialIndex = 1;
 			m_Scene.shapes.push_back(sphere);
+		} 
+		{
+			Triangle* triangle = new Triangle();
+			triangle->materialIndex = 2;
+			m_Scene.shapes.push_back(triangle);
 		}
 	}
 	virtual void OnUpdate(float ts) override

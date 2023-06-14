@@ -24,3 +24,14 @@ struct Sphere : Shape
 	HitPayload CreatePayload(const Ray& ray, float hitDistance, int objectIndex) const override;
 	float RayIntersection(Ray ray) const override;
 };
+
+struct Triangle : Shape
+{
+	glm::vec3 vertex0{ 3.0,2.0f,0.0f };
+	glm::vec3 vertex1{ -3.0f,2.0f,0.0f };
+	glm::vec3 vertex2{ 0.0f,-1.0f,0.0f };
+
+	void OnGUI() override;
+	HitPayload CreatePayload(const Ray& ray, float hitDistance, int objectIndex) const override;
+	float RayIntersection(Ray ray) const override;
+};

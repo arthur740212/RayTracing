@@ -24,6 +24,12 @@ public:
 		blueMat.albedo = { 0.2f, 0.3f, 1.0f };
 		blueMat.roughness = 0.1f;
 
+		Material& orangeMat = m_Scene.materials.emplace_back();
+		orangeMat.albedo = { 0.8f, 0.5f, 0.2f };
+		orangeMat.roughness = 0.1f;
+		orangeMat.emissionColor = orangeMat.albedo;
+		orangeMat.emissionPower = 2.0f;
+
 		{
 			Sphere sphere;
 			sphere.center = { 0.0f, 0.0f, 0.0f };
@@ -36,6 +42,14 @@ public:
 			sphere.center = { 0.0f, -101.0f, -5.0f };
 			sphere.radius = 100.f;
 			sphere.materialIndex = 1;
+			m_Scene.spheres.push_back(sphere);
+		}
+
+		{
+			Sphere sphere;
+			sphere.center = { 2.0f, 0.0f, 0.0f };
+			sphere.radius = 1.0f;
+			sphere.materialIndex = 2;
 			m_Scene.spheres.push_back(sphere);
 		}
 	}
@@ -83,6 +97,8 @@ public:
 			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.albedo), 0.1f);
 			ImGui::DragFloat("Roughness", &material.roughness, 0.05f, 0.0f, 1.0f);
 			ImGui::DragFloat("Metallic", &material.metallic, 0.05f, 0.0f, 1.0f);
+			ImGui::ColorEdit3("Emission Color", glm::value_ptr(material.emissionColor), 0.1f);
+			ImGui::DragFloat("Emission Power", &material.emissionPower, 0.05f, 0.0f, FLT_MAX);
 
 			ImGui::Separator();
 			ImGui::PopID();
